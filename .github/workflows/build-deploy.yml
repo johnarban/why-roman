@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   build:
-    if: ${{ github.repository_owner == 'cosmicds' }}
+    if: ${{ github.repository_owner == 'johnarban' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
