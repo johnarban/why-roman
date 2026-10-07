@@ -1340,7 +1340,8 @@ const tourParam = searchParams.get("tour");
 // a step without a tour to put it in means nothing. the param is 1-indexed,
 const tourStepParam = tourParam === null ? 0 : +(searchParams.get("tourStep") ?? 1) - 1;
 
-const showStartup = ref(!returning && tourParam === null);
+const TOUR_BY_DEFAULT = false; // without ?tour=, open in explore mode
+const showStartup = ref(TOUR_BY_DEFAULT && !returning && tourParam === null);
 // const showStartup = ref(false);
 const showIntroSlides = ref(false);
 function handleSplashClose() {
@@ -1523,7 +1524,7 @@ function enterExplore() {
   tours.find((t) => t.id === lastTourId.value)?.step(-1, false);
   showControlFootprints(); // the panel lists them all, so they all need to be live
   showOptions.value = true; // show the options box by default
-  showExploreCallout(); // now that the tour text is done competing for attention
+  // showExploreCallout(); // off by default; shown once per session when it was on
 }
 
 // The controls and the info sheet share one drawer column, so only one is
@@ -2472,7 +2473,8 @@ onMounted(() => {
     // If there are layers to set up, do that here!
     layersLoaded.value = true;
 
-    if (tourParam === "manual" || tourParam === "explore") {
+    if (tourParam === "manual" || tourParam === "explore"
+        || (!TOUR_BY_DEFAULT && tourParam === null)) {
       const tour = tours.find((t) => t.id === lastTourId.value) ?? tours[0];
       await tour.wtml.ready; // enterExplore runs step -1, which needs layers
       enterExplore();
