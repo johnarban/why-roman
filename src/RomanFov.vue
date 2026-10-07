@@ -71,6 +71,7 @@
                  the tour sheet's and info sheet's close icons -- a bare v-icon
                  is neither by default. -->
             <v-icon
+              class="tour-controls-close"
               icon="mdi-close"
               tabindex="0"
               role="button"
@@ -155,6 +156,26 @@
               >
                 Go to Andromeda
               </v-btn>
+            </div>
+
+            <div class="tour-controls-column">
+              <h3>Roman Surveys</h3>
+              <!-- fill on: gps_wide carries real gaps an outline will not show -->
+              <MiniFootprintSettings
+                v-for="footprint in romanSurveyFootprints"
+                :key="footprint.id"
+                v-model:opacity="footprint.opacity"
+                v-model:visible="footprint.visible"
+                v-model:fill="footprint.fill"
+                :label="footprint.label"
+                :color="footprint.color"
+                show-fill
+                :show-color="false"
+                :show-opacity="false"
+                show-go
+                @show="(_value: boolean) => updateFootprintToggleCount(footprint.id)"
+                @go="goToSurveyFootprint(footprint)"
+              />
             </div>
 
           </div>
@@ -1054,14 +1075,13 @@ import { corners as phastIFootprint } from "./footprints/m31_individual_footprin
  * The Roman core community surveys, as idealized 49.404' x 25.307' tiles, one
  * cell per pointing.
  */
-/*
 import { corners as gpsFootprint } from "./footprints/gps";
 import { corners as hltdsFootprint } from "./footprints/hltds";
 import { corners as hlwasFootprint } from "./footprints/hlwas";
 // m31 footprints
-import { corners as gbtdsFootprint } from "./footprints/gbtds_wfi";
+import { corners as gbtdsFootprint } from "./footprints/gbtds";
+/* two seasons kept apart rather than unioned */
 import { corners as m31HiDiskFootprint } from "./footprints/roman_2002_m31_hi_disk";
-*/
 import { corners as m31SfDiskFootprint } from "./footprints/roman_2002_m31_sf_disk";
 import { corners as m31SfDiskFootprintOutline } from "./footprints/roman_2002_m31_sf_disk_display";
 import IntroSlides from "./components/IntroSlides.vue";
@@ -1178,7 +1198,6 @@ const phastI = useFootprint({
 });
 
 /* The Roman core survey footprints: real sky positions, so all `fixed`. */
-/*
 const gbtds = useFootprint({
   id: "gbtds-footprint",
   label: "GBTDS",
@@ -1220,7 +1239,7 @@ const m31HiDisk = useFootprint({
   fixed: true,
   show: false,
 });
-*/
+
 
 const m31SfDisk = useFootprint({
   id: "m31-sf-disk-footprint",
@@ -1257,11 +1276,11 @@ const footprints = [
   hubbleCentered,
   roman,
   romanPixel,
-  // gbtds,
-  // hlwas,
-  // hltds,
-  // gps,
-  // m31HiDisk,
+  gbtds,
+  hlwas,
+  hltds,
+  gps,
+  m31HiDisk,
 ];
 
 // the currently visible footprints.
@@ -1276,9 +1295,22 @@ const visibleFootprints = computed(() =>
 const compareFootprints = [roman, hubbleCentered, jwstCentered];
 const pixelFootprints = [romanPixel];
 const andromedaFootprints = [m31SfDiskOutline, m31SfDisk, phast, phastI];
+const romanSurveyFootprints = [gbtds, hlwas, hltds, gps, m31HiDisk];
+
+// points at the first vertex of the first cell, not a survey centroid
+function goToSurveyFootprint(footprint: Footprint) {
+  const [ra, dec] = footprint.corners[0][0];
+  store.gotoRADecZoom({
+    raRad: ra * D2R,
+    decRad: dec * D2R,
+    zoomDeg: store.zoomDeg,
+    rollRad: 0,
+    instant: true,
+  });
+}
 
 function showControlFootprints() {
-  [...compareFootprints, ...pixelFootprints, ...andromedaFootprints].forEach(
+  [...compareFootprints, ...pixelFootprints, ...andromedaFootprints, ...romanSurveyFootprints].forEach(
     (footprint) => (footprint.show = true),
   );
 }
@@ -3462,7 +3494,8 @@ video {
     min-width: 0;
   }
 
-  .v-icon {
+  // close icon only: this stylesheet is unscoped (see CLAUDE.md)
+  .v-icon.tour-controls-close {
     position: absolute;
     top: 0;
     right: 0;

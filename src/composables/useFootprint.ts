@@ -50,6 +50,8 @@ export function useFootprint(options: FootprintOptions) {
   // something the proxy has to consider wrapping.
   return shallowReactive({
     id,
+    // the raw geometry, for callers that need a point on the sky rather than a draw
+    corners: footprint,
     label: options.label ?? id,
     color: options.color ?? "#ffffff",
     fill: options.fill ?? false,

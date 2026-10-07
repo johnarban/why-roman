@@ -6,6 +6,22 @@
     <!-- align-center so the label and checkbox sit centred against a taller
          #action button rather than riding along its top edge -->
     <div class="d-flex flex-wrap justify-space-between align-center">
+      <div
+        v-if="showGo"
+        class="go-option"
+      >
+        <button
+          type="button"
+          class="go-button"
+          :aria-label="`Point to ${label}`"
+          @click="emit('go')"
+        >
+          <v-icon
+            icon="mdi-crosshairs-gps"
+            size="small"
+          />
+        </button>
+      </div>
       <div class="show-option">
         <label>
           <input
@@ -16,7 +32,7 @@
         </label>
       </div>
       <div
-        v-if="showFill"
+        v-if="showFill && showColor"
         class="color-option"
       >
         <label>
@@ -30,6 +46,7 @@
       <div
         v-if="showFill"
         class="fill-option"
+        :class="{ 'fill-option-solo': !showColor }"
       >
         <label>
           <span class="mr-2">Fill</span>
@@ -62,17 +79,24 @@ interface Props {
   label: string;
   /** offer the fill toggle. most footprints aren't filled */
   showFill?: boolean;
+  /** the colour picker, alongside the fill toggle. off moves fill into its spot */
+  showColor?: boolean;
   /** the per-footprint opacity slider. off where the box is already busy */
   showOpacity?: boolean;
+  /** a crosshairs button that asks the parent to point the view at this footprint */
+  showGo?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   showFill: false,
+  showColor: true,
   showOpacity: true,
+  showGo: false,
 });
 
 const emit = defineEmits<{
   show: [show: boolean],
+  go: [],
 }>();
 
 const opacity = defineModel<number>("opacity", { required: true });
@@ -106,13 +130,37 @@ watch(shown, (value: boolean) => emit("show", value));
   align-items: center;
 }
 
+.show-option {
+  margin-right: auto;
+}
+
 /* so a long label wraps beside the box rather than squashing it */
 .show-option input[type="checkbox"] {
   flex: 0 0 auto;
 }
 
+.go-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 0.5em;
+  color: var(--fp-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
 .fill-option {
   padding-left: 0.5em;
+}
+
+/* sits on the label's row; the override beats the last-child rule above */
+.fill-option-solo {
+  padding-left: 0;
+}
+
+.mini-fp-settings .fill-option-solo:last-child {
+  flex-basis: auto;
 }
 
 label > span {
