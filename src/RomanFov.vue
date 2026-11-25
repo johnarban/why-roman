@@ -2482,9 +2482,10 @@ onMounted(() => {
     // If there are layers to set up, do that here!
     layersLoaded.value = true;
 
-    // the intro slides' opt-out lands straight in explore mode
+
     const skipToExplore = tourParam === null && dontshowIntroTourOnStartup.value;
-    if (tourParam === "manual" || tourParam === "explore" || skipToExplore) {
+    if (tourParam === "manual" || tourParam === "explore" || skipToExplore
+        || (!TOUR_BY_DEFAULT && tourParam === null)) {
       const tour = tours.find((t) => t.id === lastTourId.value) ?? tours[0];
       await tour.wtml.ready; // enterExplore runs step -1, which needs layers
       enterExplore();
